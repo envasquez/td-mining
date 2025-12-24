@@ -33,13 +33,17 @@ def show(c: Connection, trail: str = "Bass Champs") -> None:
         JOIN tournaments t ON r.tournament_id = t.id
         WHERE 1=1 {trail_clause}
     """
-    anglers_df = pd.read_sql(anglers_query, c, params=trail_params * 2 if trail_params else None)
+    anglers_df = pd.read_sql(
+        anglers_query, c, params=trail_params * 2 if trail_params else None
+    )
     anglers_df = anglers_df.dropna().drop_duplicates().sort_values(by="angler")
     anglers_df["norm"] = anglers_df["angler"].map(normalize_name)
 
     selected_angler_raw = st.text_input(
-        "Search for Angler Name", "", placeholder="Type angler name ...",
-        key=f"angler_search_{trail}"
+        "Search for Angler Name",
+        "",
+        placeholder="Type angler name ...",
+        key=f"angler_search_{trail}",
     )
     if not selected_angler_raw:
         return
@@ -51,8 +55,9 @@ def show(c: Connection, trail: str = "Bass Champs") -> None:
         return
     elif len(matches) > 1:
         chosen = st.selectbox(
-            "Multiple matches found. Please select one:", matches,
-            key=f"angler_select_{trail}"
+            "Multiple matches found. Please select one:",
+            matches,
+            key=f"angler_select_{trail}",
         )
         angler = chosen
     else:

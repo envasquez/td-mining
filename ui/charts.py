@@ -43,7 +43,9 @@ def prepare_stacked_bar_data(
             base += height
 
     df_label = pd.DataFrame(rows)
-    df_label["place"] = pd.Categorical(df_label["place"], categories=PLACES, ordered=True)
+    df_label["place"] = pd.Categorical(
+        df_label["place"], categories=PLACES, ordered=True
+    )
     return df_label
 
 
@@ -92,7 +94,9 @@ def create_stacked_bar_chart(
                 scale=alt.Scale(scheme="blues"),
                 title="Place",
             ),
-            tooltip=[alt.Tooltip(field, title=title) for field, title in tooltip_fields],
+            tooltip=[
+                alt.Tooltip(field, title=title) for field, title in tooltip_fields
+            ],
         )
     )
 

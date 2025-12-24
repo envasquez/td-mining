@@ -51,11 +51,11 @@ def get_tournament_links(s, urls):
         )
         for link in soup.find_all("a", href=pattern):
             href = link["href"].replace("&amp;", "&")
-            l = f"{base_url}/{href}&action=displayThisMany&page=recalculate&sortField=place&junior=no"
-            if l not in ALL_LINKS:
-                ALL_LINKS.append(l)
+            full_url = f"{base_url}/{href}&action=displayThisMany&page=recalculate&sortField=place&junior=no"
+            if full_url not in ALL_LINKS:
+                ALL_LINKS.append(full_url)
             else:
-                logger.info(f"Link exists, skipping ... {l}")
+                logger.info(f"Link exists, skipping ... {full_url}")
     with open(LINKS_FILE, mode="w", encoding="utf-8") as f:
         json.dump(ALL_LINKS, f, indent=4)
 
