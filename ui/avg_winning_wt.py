@@ -5,15 +5,28 @@ import pandas as pd
 import streamlit as st
 
 from constants import PLACES, TEXT_COLOR
-from db import db_conn, load_data
+from db import db_conn, get_trail_filter_sql
 
 
 @db_conn
-def show(c: Connection) -> None:
-    st.header("🎣Average Winning Weight Per Year")
+def show(c: Connection, trail: str = "Bass Champs") -> None:
+    st.subheader("Average Winning Weight Per Year")
+
+    trail_clause, trail_params = get_trail_filter_sql(trail)
+    query = f"""
+        SELECT strftime('%Y', t.date) AS year, r.place, ROUND(AVG(r.weight), 2) AS avg_weight
+        FROM results r
+        JOIN tournaments t ON r.tournament_id = t.id
+        WHERE r.place IN (1, 2, 3) AND r.weight IS NOT NULL
+        {trail_clause}
+        GROUP BY year, place
+    """
+    df = pd.read_sql(query, c, params=trail_params if trail_params else None)
+    if df.empty:
+        st.info("No data available for this trail.")
+        return
     df = (
-        load_data(c, q_file="queries/avg_wt_yr.sql")
-        .pivot(index="year", columns="place", values="avg_weight")
+        df.pivot(index="year", columns="place", values="avg_weight")
         .fillna(0)
         .reset_index()
     )

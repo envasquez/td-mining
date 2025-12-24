@@ -6,7 +6,7 @@ import altair as alt
 import pandas as pd
 import streamlit as st
 
-from db import db_conn, load_data, load_query
+from db import db_conn, get_trail_filter_sql
 
 
 def normalize_name(name: str) -> str:
@@ -19,38 +19,68 @@ def normalize_name(name: str) -> str:
 
 
 @db_conn
-def show(c: Connection) -> None:
-    st.title("Angler Performance Viewer")
-    anglers_df = load_data(c, q_file="queries/all_anglers.sql")
+def show(c: Connection, trail: str = "Bass Champs") -> None:
+    st.subheader("Angler Performance Viewer")
+
+    # Load anglers filtered by trail
+    trail_clause, trail_params = get_trail_filter_sql(trail)
+    anglers_query = f"""
+        SELECT DISTINCT angler1 as angler FROM results r
+        JOIN tournaments t ON r.tournament_id = t.id
+        WHERE 1=1 {trail_clause}
+        UNION
+        SELECT DISTINCT angler2 as angler FROM results r
+        JOIN tournaments t ON r.tournament_id = t.id
+        WHERE 1=1 {trail_clause}
+    """
+    anglers_df = pd.read_sql(anglers_query, c, params=trail_params * 2 if trail_params else None)
     anglers_df = anglers_df.dropna().drop_duplicates().sort_values(by="angler")
     anglers_df["norm"] = anglers_df["angler"].map(normalize_name)
 
     selected_angler_raw = st.text_input(
-        "Search for Angler Name", "", placeholder="Type angler name ..."
+        "Search for Angler Name", "", placeholder="Type angler name ...",
+        key=f"angler_search_{trail}"
     )
     if not selected_angler_raw:
-        st.stop()
+        return
 
     normalized_input = normalize_name(selected_angler_raw)
     matches = anglers_df[anglers_df["norm"] == normalized_input]["angler"].tolist()
     if not matches:
         st.warning("No close match found ...")
-        st.stop()
+        return
     elif len(matches) > 1:
-        chosen = st.selectbox("Multiple matches found. Please select one:", matches)
+        chosen = st.selectbox(
+            "Multiple matches found. Please select one:", matches,
+            key=f"angler_select_{trail}"
+        )
         angler = chosen
     else:
         angler = matches[0]
     st.success(f"Showing results for: **{angler}**")
 
-    df = pd.read_sql(
-        load_query(filename="queries/angler_performance.sql"),
-        c,
-        params=(angler, angler),
-    )
+    # Build query with trail filter
+    perf_query = f"""
+        SELECT
+            t.date,
+            strftime('%Y', t.date) AS year,
+            t.lake,
+            r.place,
+            r.weight,
+            r.fish,
+            r.big_bass,
+            prize
+        FROM tournaments t
+        JOIN results r ON r.tournament_id = t.id
+        WHERE (LOWER(r.angler1) LIKE ? OR LOWER(r.angler2) LIKE ?)
+        {trail_clause}
+        ORDER BY r.place ASC, t.date DESC
+    """
+    params = [angler.lower(), angler.lower()] + (trail_params if trail_params else [])
+    df = pd.read_sql(perf_query, c, params=params)
     if df.empty:
         st.info("No tournament data found for that angler.")
-        st.stop()
+        return
 
     st.subheader("Finishes [best, then most recent]")
     column_config = {

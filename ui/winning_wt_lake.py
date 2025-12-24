@@ -5,15 +5,35 @@ import pandas as pd
 import streamlit as st
 
 from constants import PLACES
-from db import db_conn, load_data
+from db import db_conn, get_trail_filter_sql
 
 
 @db_conn
-def show(c: Connection) -> None:
-    st.header("🏆Winning Weights by Lake per Year")
+def show(c: Connection, trail: str = "Bass Champs") -> None:
+    st.subheader("Winning Weights by Lake per Year")
+
+    trail_clause, trail_params = get_trail_filter_sql(trail)
+    query = f"""
+        SELECT
+            strftime('%Y', t.date) AS year,
+            t.lake,
+            r.place,
+            r.weight
+        FROM tournaments t
+        JOIN results r ON t.id = r.tournament_id
+        WHERE r.place IN (1, 2, 3)
+          AND r.weight IS NOT NULL
+          AND t.lake IS NOT NULL
+          {trail_clause}
+        GROUP BY year, t.lake, r.place
+        ORDER BY year DESC, t.lake, r.place
+    """
+    df = pd.read_sql(query, c, params=trail_params if trail_params else None)
+    if df.empty:
+        st.info("No data available for this trail.")
+        return
     df = (
-        load_data(c, q_file="queries/wt_lake_year.sql")
-        .pivot(index=["year", "lake"], columns="place", values="weight")
+        df.pivot(index=["year", "lake"], columns="place", values="weight")
         .fillna(0)
         .reset_index()
     )

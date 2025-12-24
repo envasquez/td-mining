@@ -5,13 +5,29 @@ import pandas as pd
 import streamlit as st
 
 from constants import TEXT_COLOR
-from db import db_conn, load_data
+from db import db_conn, get_trail_filter_sql
 
 
 @db_conn
-def show(c: Connection):
-    st.header("🎣Average Winning Weight & Frequency per Lake")
-    df = load_data(c, q_file="queries/avg_win_wt_lake.sql")
+def show(c: Connection, trail: str = "Bass Champs"):
+    st.subheader("Average Winning Weight & Frequency per Lake")
+
+    trail_clause, trail_params = get_trail_filter_sql(trail)
+    query = f"""
+        SELECT
+            t.lake,
+            COUNT(DISTINCT t.id) AS tournament_count,
+            ROUND(AVG(r.weight), 2) AS avg_winning_weight
+        FROM tournaments t
+        JOIN results r ON t.id = r.tournament_id
+        WHERE r.place = 1 AND t.lake IS NOT NULL AND r.weight IS NOT NULL
+        {trail_clause}
+        GROUP BY t.lake
+    """
+    df = pd.read_sql(query, c, params=trail_params if trail_params else None)
+    if df.empty:
+        st.info("No data available for this trail.")
+        return
     df = df.sort_values("avg_winning_weight", ascending=False).reset_index(drop=True)
     df["lake"] = pd.Categorical(df["lake"], categories=df["lake"], ordered=True)
     max_count = df["tournament_count"].max()

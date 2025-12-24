@@ -9,18 +9,32 @@ from ui import (
 )
 
 
+def render_trail_sections(trail: str) -> None:
+    """Render all data sections for a given trail."""
+    avg_winning_wt.show(trail=trail)
+    avg_winning_wt_lake.show(trail=trail)
+    winning_wt_lake.show(trail=trail)
+    top_twenty.show(trail=trail)
+    angler_perf.show(trail=trail)
+
+
 def main():
     st.set_page_config(layout="wide")
-    st.title("BASS CHAMPS Tournament Data")
+    st.title("Tournament Data Dashboard")
 
-    for section in [
-        avg_winning_wt.show,
-        avg_winning_wt_lake.show,
-        winning_wt_lake.show,
-        top_twenty.show,
-        angler_perf.show,
-    ]:
-        section()
+    tabs = st.tabs(["Bass Champs", "TTZ Team Trail", "TTZ Tuesday Night"])
+
+    with tabs[0]:
+        st.header("Bass Champs Tournament Trail")
+        render_trail_sections("Bass Champs")
+
+    with tabs[1]:
+        st.header("TTZ Team Trail")
+        render_trail_sections("TTZ Team Trail")
+
+    with tabs[2]:
+        st.header("TTZ Tuesday Night")
+        render_trail_sections("TTZ Tuesday Night")
 
 
 if __name__ == "__main__":
