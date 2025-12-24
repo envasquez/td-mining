@@ -5,6 +5,8 @@ import sqlite3
 from datetime import datetime
 from pathlib import Path
 
+from lakes import LAKES
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
@@ -14,46 +16,6 @@ logger = logging.getLogger(__name__)
 
 DB_FILE = Path(__file__).resolve().parent.parent / "tournaments.db"
 TTZ_DATA_DIR = Path(__file__).resolve().parent.parent / "data" / "ttz1"
-
-LAKES = {
-    "amistad": "Lake Amistad",
-    "belton": "Lake Belton",
-    "cedar creek": "Cedar Creek Reservoir",
-    "choke": "Choke Canyon Reservoir",
-    "buchanan": "Lake Buchanan",
-    "falcon": "Lake Falcon",
-    "fork": "Lake Fork",
-    "lbj": "Lake LBJ",
-    "lewisville": "Lake Lewisville",
-    "ivie": "O.H. Ivie Reservoir",
-    "ray roberts": "Lake Ray Roberts",
-    "sam rayburn": "Sam Rayburn Reservoir",
-    "tawakoni": "Lake Tawakoni",
-    "travis": "Lake Travis",
-    "toledo": "Toledo Bend Reservoir",
-    "whitney": "Lake Whitney",
-    "red river": "The Red River",
-    "arbuckle": "Lake Arbuckle",
-    "texoma": "Lake Texoma",
-    "richland": "Richland-Chambers Reservoir",
-    "sabine": "The Sabine River",
-    "eagle": "Eagle Mountain Lake",
-    "limestone": "Lake Limestone",
-    "squaw": "Squaw Creek",
-    "austin": "Lake Austin",
-    "canyon": "Canyon Lake",
-    "medina": "Medina Lake",
-    "calaveras": "Calaveras Lake",
-    "braunig": "Braunig Lake",
-    "dunlap": "Lake Dunlap",
-    "marble falls": "Lake Marble Falls",
-    "inks": "Inks Lake",
-    "pflugerville": "Lake Pflugerville",
-    "lady bird": "Lady Bird Lake",
-    "granger": "Granger Lake",
-    "stillhouse": "Stillhouse Hollow Lake",
-    "coleto": "Coleto Creek Reservoir",
-}
 
 
 def classify_ttz_trail(url: str, title: str) -> str:

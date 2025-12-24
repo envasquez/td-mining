@@ -1,9 +1,8 @@
 SELECT
     t.lake,
-    r.place,
-    COUNT(*) AS tournament_count,
+    COUNT(DISTINCT t.id) AS tournament_count,
     ROUND(AVG(r.weight), 2) AS avg_winning_weight
 FROM tournaments t
 JOIN results r ON t.id = r.tournament_id
-WHERE r.place in (1, 2, 3) AND t.lake IS NOT NULL
+WHERE r.place = 1 AND t.lake IS NOT NULL AND r.weight IS NOT NULL
 GROUP BY t.lake
