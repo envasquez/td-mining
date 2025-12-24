@@ -60,7 +60,7 @@ def show(c: Connection, trail: str = "Bass Champs") -> None:
             st.data_editor(
                 results_df,
                 column_config=column_config,
-                use_container_width=True,
+                width="stretch",
                 hide_index=True,
                 disabled=True,
             )

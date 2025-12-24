@@ -100,7 +100,7 @@ def show(c: Connection, trail: str = "Bass Champs") -> None:
     st.data_editor(
         df[["place", "lake", "weight", "fish", "big_bass", "date", "prize"]],
         column_config=column_config,
-        use_container_width=True,
+        width="stretch",
         hide_index=True,
         disabled=True,
     )
@@ -132,5 +132,5 @@ def show(c: Connection, trail: str = "Bass Champs") -> None:
     ) + alt.Chart(yearly_stats).mark_text(
         align="center", baseline="bottom", dy=-5, color="#f28e2b"
     ).encode(x="year:O", y="avg_place:Q", text=alt.Text("avg_place:Q", format=".1f"))
-    c1.altair_chart(weight_chart, use_container_width=True)
-    c2.altair_chart(place_chart, use_container_width=True)
+    c1.altair_chart(weight_chart, width="stretch")
+    c2.altair_chart(place_chart, width="stretch")

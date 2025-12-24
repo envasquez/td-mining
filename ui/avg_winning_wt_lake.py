@@ -69,4 +69,4 @@ def show(c: Connection, trail: str = "Bass Champs"):
         .resolve_scale(y="independent")
         .properties(height=500)
     )
-    st.altair_chart(chart, use_container_width=True)
+    st.altair_chart(chart, width="stretch")

@@ -46,4 +46,4 @@ def show(c: Connection, trail: str = "Bass Champs") -> None:
             ("avg_weight_lbs:N", "Avg Weight"),
         ],
     )
-    st.altair_chart(chart, use_container_width=True)
+    st.altair_chart(chart, width="stretch")
