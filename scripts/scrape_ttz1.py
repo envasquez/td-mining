@@ -59,10 +59,23 @@ def get_ttz_trail_links(session: requests.Session) -> list[str]:
 
     # Non-result pages to skip
     skip_pages = {
-        "calendar", "2026reg", "tuesday-nighters", "wednesday-nights",
-        "events", "rules", "shop", "corpevents", "about-ttz", "contact-us",
-        "category", "2019aoystandings", "2018-aoy-standings", "2017-aoy-standings",
-        "2016-aoy-standings", "2015-aoy-standings", "2014-aoy-standings",
+        "calendar",
+        "2026reg",
+        "tuesday-nighters",
+        "wednesday-nights",
+        "events",
+        "rules",
+        "shop",
+        "corpevents",
+        "about-ttz",
+        "contact-us",
+        "category",
+        "2019aoystandings",
+        "2018-aoy-standings",
+        "2017-aoy-standings",
+        "2016-aoy-standings",
+        "2015-aoy-standings",
+        "2014-aoy-standings",
     }
 
     # Find all links that point to ttz1.com result pages
@@ -80,7 +93,9 @@ def get_ttz_trail_links(session: requests.Session) -> list[str]:
                 continue
             # Skip non-result pages
             slug = href.rstrip("/").split("/")[-1]
-            if slug in skip_pages or any(skip in href for skip in ["aoy-standings", "aoystandings"]):
+            if slug in skip_pages or any(
+                skip in href for skip in ["aoy-standings", "aoystandings"]
+            ):
                 continue
             # Normalize to https
             href = href.replace("http://ttz1.com", "https://ttz1.com")
@@ -164,9 +179,29 @@ def get_tournament_results(session: requests.Session, url: str):
             if "TTZ" in text and any(
                 month in text
                 for month in [
-                    "January", "February", "March", "April", "May", "June",
-                    "July", "August", "September", "October", "November", "December",
-                    "Jan", "Feb", "Mar", "Apr", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+                    "January",
+                    "February",
+                    "March",
+                    "April",
+                    "May",
+                    "June",
+                    "July",
+                    "August",
+                    "September",
+                    "October",
+                    "November",
+                    "December",
+                    "Jan",
+                    "Feb",
+                    "Mar",
+                    "Apr",
+                    "Jun",
+                    "Jul",
+                    "Aug",
+                    "Sep",
+                    "Oct",
+                    "Nov",
+                    "Dec",
                 ]
             ):
                 event_header = text

@@ -159,7 +159,10 @@ def extract_date_from_text(text: str) -> str | None:
         (r"(Dec\.?\s+\d{1,2},?\s+\d{4})", "%b. %d, %Y"),
         (r"(Dec\s+\d{1,2},?\s+\d{4})", "%b %d, %Y"),
         # Date range like "October 4-5, 2025" - take first date
-        (r"((?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2})-\d{1,2},?\s+(\d{4})", None),
+        (
+            r"((?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2})-\d{1,2},?\s+(\d{4})",
+            None,
+        ),
     ]
 
     for pattern, fmt in patterns:

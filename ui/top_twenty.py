@@ -17,7 +17,9 @@ def show(c: Connection, trail: str = "Bass Champs") -> None:
         WHERE 1=1 {trail_clause}
         ORDER BY date DESC
     """
-    tournaments_df = pd.read_sql(query, c, params=trail_params if trail_params else None)
+    tournaments_df = pd.read_sql(
+        query, c, params=trail_params if trail_params else None
+    )
     if tournaments_df.empty:
         st.info("No tournaments available for this trail.")
         return
@@ -37,7 +39,9 @@ def show(c: Connection, trail: str = "Bass Champs") -> None:
                 zip(tournaments_in_year["label"], tournaments_in_year["id"])
             )
             selected_label = st.selectbox(
-                "Select a Tournament", list(tournament_map.keys()), key=f"select_{trail}_{year}"
+                "Select a Tournament",
+                list(tournament_map.keys()),
+                key=f"select_{trail}_{year}",
             )
             selected_id = tournament_map[selected_label]
             results_df = pd.read_sql(

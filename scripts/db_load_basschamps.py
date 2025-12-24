@@ -26,9 +26,9 @@ if __name__ == "__main__":
                 date_str = dt.date().isoformat()
 
                 lake = None
-                for ident, l in LAKES.items():
+                for ident, lake_name in LAKES.items():
                     if ident in metadata.get("Tournament", "").lower():
-                        lake = l
+                        lake = lake_name
                         break
 
                 tournament_name = metadata.get("Tournament")
