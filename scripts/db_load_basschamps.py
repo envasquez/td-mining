@@ -4,34 +4,10 @@ import sqlite3
 from datetime import datetime
 from pathlib import Path
 
+from lakes import LAKES
+
 DB_FILE = Path(__file__).resolve().parent.parent / "tournaments.db"
 TOURNAMENT_DIR = Path(__file__).resolve().parent.parent / "data"
-LAKES = {
-    "amistad": "Lake Amistad",
-    "belton": "Lake Belton",
-    "cedar creek": "Cedar Creek Reservoir",
-    "choke": "Choke Canyon Reservoir",
-    "buchanan": "Lake Buchanan",
-    "falcon": "Lake Falcon",
-    "fork": "Lake Fork",
-    "lbj": "Lake LBJ",
-    "lewisville": "Lake Lewisville",
-    "ivie": "O.H. Ivie Reservoir",
-    "ray roberts": "Lake Ray Roberts",
-    "sam rayburn": "Sam Rayburn Reservoir",
-    "tawakoni": "Lake Tawakoni",
-    "travis": "Lake Travis",
-    "toledo": "Toledo Bend Reservoir",
-    "whitney": "Lake Whitney",
-    "red river": "The Red River",
-    "arbuckle": "Lake Arbuckle",
-    "texoma": "Lake Texoma",
-    "richland": "Richland-Chambers Reservoir",
-    "sabine": "The Sabine River",
-    "eagle": "Eagle Mountain Lake",
-    "limestone": "Lake Limestone",
-    "squaw": "Squaw Creek",
-}
 
 
 if __name__ == "__main__":
