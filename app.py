@@ -29,6 +29,7 @@ def main():
         "TTZ Wednesday Night",
         "TTZ Thursday Night",
         "TTZ Championship",
+        "TTO Team Trail",
     ])
 
     with tabs[0]:
@@ -54,6 +55,10 @@ def main():
     with tabs[5]:
         st.header("TTZ Championship")
         render_trail_sections("TTZ Championship")
+
+    with tabs[6]:
+        st.header("TTO Team Trail")
+        render_trail_sections("TTO Team Trail")
 
 
 if __name__ == "__main__":
