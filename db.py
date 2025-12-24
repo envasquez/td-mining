@@ -1,17 +1,47 @@
+from contextlib import contextmanager
 from functools import wraps
+from pathlib import Path
 from sqlite3 import Connection, connect
 
 import pandas as pd
 
+# Database path - can be overridden for testing
+DB_PATH = Path(__file__).resolve().parent / "tournaments.db"
+
+
+@contextmanager
+def get_db_connection(db_path: Path | str | None = None):
+    """
+    Context manager for database connections.
+
+    Usage:
+        with get_db_connection() as conn:
+            df = pd.read_sql("SELECT * FROM tournaments", conn)
+
+    Args:
+        db_path: Optional path to database file. Defaults to DB_PATH.
+
+    Yields:
+        sqlite3.Connection object
+    """
+    conn = connect(db_path or DB_PATH)
+    try:
+        yield conn
+    finally:
+        conn.close()
+
 
 def db_conn(func):
+    """
+    Decorator that provides a database connection as the first argument.
+
+    The connection is automatically closed after the function returns.
+    """
+
     @wraps(func)
     def wrapper(*args, **kwargs):
-        c: Connection = connect(database="tournaments.db")
-        try:
+        with get_db_connection() as c:
             return func(c, *args, **kwargs)
-        finally:
-            c.close()
 
     return wrapper
 
