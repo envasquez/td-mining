@@ -163,17 +163,27 @@ def extract_results_from_page(
             break
 
     # Find results table - MediaBass uses standard HTML tables
+    # We want the MAIN results table, not Big Bass or Little League tables
     tables = soup.find_all("table")
+
+    # Find the largest valid results table (main tournament results)
+    best_table = None
+    best_row_count = 0
 
     for table in tables:
         rows = table.find_all("tr")
-        if len(rows) < 2:
+        if len(rows) < 5:  # Main table should have at least 5 rows
             continue
 
         # Check if this looks like a results table
         header_row = rows[0]
         header_cells = header_row.find_all(["th", "td"])
         header_text = [cell.get_text(strip=True).lower() for cell in header_cells]
+        header_full = " ".join(header_text)
+
+        # Skip Big Bass and Little League tables
+        if "big bass" in header_full or "little league" in header_full:
+            continue
 
         # Look for typical result table headers
         has_place = any("place" in h or "pl" == h or "#" == h for h in header_text)
@@ -182,114 +192,130 @@ def extract_results_from_page(
             for h in header_text
         )
 
-        if not (has_place or has_weight):
+        if not (has_place and has_weight):  # Require BOTH place and weight
             continue
 
-        # Find column indices
-        col_indices = {}
-        for i, h in enumerate(header_text):
-            if "place" in h or h == "pl" or h == "#":
-                col_indices["place"] = i
-            elif "angler 1" in h or "angler1" in h:
-                col_indices["angler1"] = i
-            elif "angler 2" in h or "angler2" in h:
-                col_indices["angler2"] = i
-            elif "angler" in h or "name" in h or "team" in h:
-                if "angler" not in col_indices and "angler1" not in col_indices:
-                    col_indices["angler"] = i
-            elif ("bass" in h or h == "# bass") and "big" not in h:
-                col_indices["fish"] = i
-            elif ("weight" in h or "wt" in h or "lbs" in h or "pounds" in h) and (
-                "big" not in h
-            ):
-                col_indices["weight"] = i
-            elif "big" in h:
-                col_indices["big_bass"] = i
-            elif "win" in h or "prize" in h or "$" in h:
-                col_indices["prize"] = i
+        # Prefer larger tables (main results table has more rows)
+        if len(rows) > best_row_count:
+            best_table = table
+            best_row_count = len(rows)
 
-        # If no explicit place column, assume first column
-        if "place" not in col_indices:
-            col_indices["place"] = 0
+    if best_table is None:
+        return results, metadata
 
-        # Process data rows
-        for row in rows[1:]:
-            cells = row.find_all(["td", "th"])
-            if not cells:
-                continue
+    # Process the best table
+    table = best_table
+    rows = table.find_all("tr")
+    header_row = rows[0]
+    header_cells = header_row.find_all(["th", "td"])
+    header_text = [cell.get_text(strip=True).lower() for cell in header_cells]
 
-            cell_values = [cell.get_text(strip=True) for cell in cells]
+    # Find column indices
+    col_indices = {}
+    for i, h in enumerate(header_text):
+        if "place" in h or h == "pl" or h == "#":
+            col_indices["place"] = i
+        elif "angler 1" in h or "angler1" in h:
+            col_indices["angler1"] = i
+        elif "angler 2" in h or "angler2" in h:
+            col_indices["angler2"] = i
+        elif "angler" in h or "name" in h or "team" in h:
+            if "angler" not in col_indices and "angler1" not in col_indices:
+                col_indices["angler"] = i
+        elif ("bass" in h or h == "# bass") and "big" not in h:
+            col_indices["fish"] = i
+        elif ("weight" in h or "wt" in h or "lbs" in h or "pounds" in h) and (
+            "big" not in h
+        ):
+            col_indices["weight"] = i
+        elif "big" in h:
+            col_indices["big_bass"] = i
+        elif "win" in h or "prize" in h or "$" in h:
+            col_indices["prize"] = i
 
-            # Skip empty rows or header-like rows
-            if not any(cell_values):
-                continue
-            if cell_values[0].lower() in ["place", "pl", "#", ""]:
-                continue
+    # If no explicit place column, assume first column
+    if "place" not in col_indices:
+        col_indices["place"] = 0
 
-            result = {}
+    # Process data rows
+    for row in rows[1:]:
+        cells = row.find_all(["td", "th"])
+        if not cells:
+            continue
 
-            # Extract place
-            place_idx = col_indices.get("place", 0)
-            if place_idx < len(cell_values):
-                result["place"] = parse_place(cell_values[place_idx])
+        cell_values = [cell.get_text(strip=True) for cell in cells]
 
-            # Extract angler(s) - check for separate columns first
-            if "angler1" in col_indices:
-                a1_idx = col_indices["angler1"]
-                if a1_idx < len(cell_values):
-                    result["angler1"] = cell_values[a1_idx].strip()
-                if "angler2" in col_indices:
-                    a2_idx = col_indices["angler2"]
-                    if a2_idx < len(cell_values):
-                        result["angler2"] = cell_values[a2_idx].strip()
-                    else:
-                        result["angler2"] = ""
+        # Skip empty rows or header-like rows
+        if not any(cell_values):
+            continue
+        if cell_values[0].lower() in ["place", "pl", "#", ""]:
+            # Check if this is a sub-section header (Little League, Big Bass, etc.)
+            header_text = " ".join(cell_values).lower()
+            if "little league" in header_text or "big bass" in header_text:
+                # Stop processing - we've hit a different section
+                break
+            continue
+
+        result = {}
+
+        # Extract place
+        place_idx = col_indices.get("place", 0)
+        if place_idx < len(cell_values):
+            result["place"] = parse_place(cell_values[place_idx])
+
+        # Extract angler(s) - check for separate columns first
+        if "angler1" in col_indices:
+            a1_idx = col_indices["angler1"]
+            if a1_idx < len(cell_values):
+                result["angler1"] = cell_values[a1_idx].strip()
+            if "angler2" in col_indices:
+                a2_idx = col_indices["angler2"]
+                if a2_idx < len(cell_values):
+                    result["angler2"] = cell_values[a2_idx].strip()
                 else:
                     result["angler2"] = ""
-            elif "angler" in col_indices:
-                angler_idx = col_indices["angler"]
-                if angler_idx < len(cell_values):
-                    angler_text = cell_values[angler_idx]
-                    if is_team:
-                        # Try to split team into two anglers
-                        separators = [" / ", "/", " & ", " and ", " - "]
-                        for sep in separators:
-                            if sep in angler_text:
-                                parts = angler_text.split(sep, 1)
-                                result["angler1"] = parts[0].strip()
-                                result["angler2"] = (
-                                    parts[1].strip() if len(parts) > 1 else ""
-                                )
-                                break
-                        else:
-                            result["angler1"] = angler_text
-                            result["angler2"] = ""
+            else:
+                result["angler2"] = ""
+        elif "angler" in col_indices:
+            angler_idx = col_indices["angler"]
+            if angler_idx < len(cell_values):
+                angler_text = cell_values[angler_idx]
+                if is_team:
+                    # Try to split team into two anglers
+                    separators = [" / ", "/", " & ", " and ", " - "]
+                    for sep in separators:
+                        if sep in angler_text:
+                            parts = angler_text.split(sep, 1)
+                            result["angler1"] = parts[0].strip()
+                            result["angler2"] = (
+                                parts[1].strip() if len(parts) > 1 else ""
+                            )
+                            break
                     else:
                         result["angler1"] = angler_text
                         result["angler2"] = ""
+                else:
+                    result["angler1"] = angler_text
+                    result["angler2"] = ""
 
-            # Extract fish count
-            fish_idx = col_indices.get("fish")
-            if fish_idx is not None and fish_idx < len(cell_values):
-                result["fish"] = parse_fish_count(cell_values[fish_idx])
+        # Extract fish count
+        fish_idx = col_indices.get("fish")
+        if fish_idx is not None and fish_idx < len(cell_values):
+            result["fish"] = parse_fish_count(cell_values[fish_idx])
 
-            # Extract weight
-            weight_idx = col_indices.get("weight")
-            if weight_idx is not None and weight_idx < len(cell_values):
-                result["weight"] = parse_weight(cell_values[weight_idx])
+        # Extract weight
+        weight_idx = col_indices.get("weight")
+        if weight_idx is not None and weight_idx < len(cell_values):
+            result["weight"] = parse_weight(cell_values[weight_idx])
 
-            # Extract big bass
-            bb_idx = col_indices.get("big_bass")
-            if bb_idx is not None and bb_idx < len(cell_values):
-                result["big_bass"] = parse_weight(cell_values[bb_idx])
+        # Extract big bass
+        bb_idx = col_indices.get("big_bass")
+        if bb_idx is not None and bb_idx < len(cell_values):
+            result["big_bass"] = parse_weight(cell_values[bb_idx])
 
-            # Only add if we have valid data
-            if result.get("place") and (result.get("angler1") or result.get("weight")):
-                results.append(result)
-
-        # If we found results, break (use first valid table)
-        if results:
-            break
+        # Only add if we have valid data
+        if result.get("place") and (result.get("angler1") or result.get("weight")):
+            results.append(result)
 
     return results, metadata
 
