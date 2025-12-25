@@ -103,6 +103,7 @@ def show(c: Connection, trail: str = "Bass Champs") -> None:
         width="stretch",
         hide_index=True,
         disabled=True,
+        key=f"angler_perf_{trail}_{angler}",
     )
     df["year"] = pd.to_datetime(df["date"]).dt.year
     yearly_stats = (

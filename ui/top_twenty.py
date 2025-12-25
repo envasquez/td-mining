@@ -63,4 +63,5 @@ def show(c: Connection, trail: str = "Bass Champs") -> None:
                 width="stretch",
                 hide_index=True,
                 disabled=True,
+                key=f"top20_{trail}_{year}_{selected_id}",
             )
