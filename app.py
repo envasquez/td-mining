@@ -25,11 +25,9 @@ def main():
     tabs = st.tabs([
         "Bass Champs",
         "TTZ Team Trail",
-        "TTZ Tuesday Night",
-        "TTZ Wednesday Night",
-        "TTZ Thursday Night",
-        "TTZ Championship",
         "TTO Team Trail",
+        "MediaBass Teams",
+        "MediaBass Individuals",
     ])
 
     with tabs[0]:
@@ -41,24 +39,16 @@ def main():
         render_trail_sections("TTZ Team Trail")
 
     with tabs[2]:
-        st.header("TTZ Tuesday Night")
-        render_trail_sections("TTZ Tuesday Night")
-
-    with tabs[3]:
-        st.header("TTZ Wednesday Night")
-        render_trail_sections("TTZ Wednesday Night")
-
-    with tabs[4]:
-        st.header("TTZ Thursday Night")
-        render_trail_sections("TTZ Thursday Night")
-
-    with tabs[5]:
-        st.header("TTZ Championship")
-        render_trail_sections("TTZ Championship")
-
-    with tabs[6]:
         st.header("TTO Team Trail")
         render_trail_sections("TTO Team Trail")
+
+    with tabs[3]:
+        st.header("MediaBass Teams")
+        render_trail_sections("MediaBass Teams")
+
+    with tabs[4]:
+        st.header("MediaBass Individuals")
+        render_trail_sections("MediaBass")
 
 
 if __name__ == "__main__":

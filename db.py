@@ -63,6 +63,8 @@ _TRAIL_FILTERS: dict[str, tuple[str, list]] = {
     "TTZ Thursday Night": ("AND tournament_trail = ?", ["TTZ Thursday Night"]),
     "TTZ Championship": ("AND tournament_trail = ?", ["TTZ Championship"]),
     "TTO Team Trail": ("AND tournament_trail = ?", ["TTO Team Trail"]),
+    "MediaBass Teams": ("AND tournament_trail = ?", ["MediaBass Teams"]),
+    "MediaBass": ("AND tournament_trail = ?", ["MediaBass"]),
 }
 
 
